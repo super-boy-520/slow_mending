@@ -1,9 +1,9 @@
 name: slow_mending
-version: '1.0'
+version: 'v1.1'
 main: org.sbbpl.slow_mending.Slow_mending
 api-version: '1.20'
-#commands:
-#  slowmending:
-#    description: A plugin that mack mend slower and expensive than before.
-#    aliases: slmend
-#
+commands:
+  slowmending:
+    description: A plugin that mack mend slower and expensive than before.
+    aliases: slmend
+
