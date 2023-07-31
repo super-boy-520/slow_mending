@@ -43,13 +43,11 @@ public final class Slow_mending extends JavaPlugin implements Listener {
                 lore = e.getItem().getItemMeta().getLore();
                 for (String list : lore) {//遍历一遍找指定
                     list = list.substring(0,7);
-                    System.out.println(list);
                     if (list.equals("剩余修补次数：")){//找到
                         find = true;
                         break;
                     }
                 }
-                System.out.println(find);
                 if (!find){
                     ItemMeta mate = e.getItem().getItemMeta();
                     lore.add("剩余修补次数： "+(Max+1));
@@ -114,13 +112,10 @@ public final class Slow_mending extends JavaPlugin implements Listener {
 
                 //判断是否减缓
                 if (Slow_Mend) {
-                    System.out.println("fc");
                     //随机生效
                     Random r = new Random();
                     int radCoefficient = r.nextInt(Mitigation_Coefficient);
-                    System.out.println(radCoefficient);
                     if ((radCoefficient == 0) && (!Ban_Item.contains(e.getItem().getType().toString()))) {
-                        System.out.println("激活");
                     }else {
                         e.setCancelled(true);
                     }
