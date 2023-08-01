@@ -6,4 +6,5 @@ commands:
   slowmending:
     description: A plugin that mack mend slower and expensive than before.
     aliases: slmend
+    permission: slowmwnding.use
 

@@ -41,5 +41,9 @@ Settings:
     #更改名字前缀的内容
     Item_Prefix: 破损的-
 
+  Obtain:
+    #经验修补是否可以从村民出货
+    Villager: false
+
 
 

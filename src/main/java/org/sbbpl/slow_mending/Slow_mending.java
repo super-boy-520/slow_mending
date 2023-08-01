@@ -1,22 +1,28 @@
 package org.sbbpl.slow_mending;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.enchantment.EnchantItemEvent;
+import org.bukkit.event.entity.VillagerAcquireTradeEvent;
 import org.bukkit.event.player.PlayerItemMendEvent;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public final class Slow_mending extends JavaPlugin implements Listener {
+import static org.bukkit.enchantments.Enchantment.MENDING;
 
-    private boolean Mend, Slow_Mend,Limit,Change_Name,send;
+public final class Slow_mending extends JavaPlugin implements Listener, CommandExecutor {
+
+    private boolean Mend, Slow_Mend,Limit,Change_Name,send,Obtain_v,Obtain_e;
     private int Mitigation_Coefficient,Max;
     private List<String> Ban_Item, Allow_item;
     private String Message,Item_Prefix;
@@ -127,6 +133,67 @@ public final class Slow_mending extends JavaPlugin implements Listener {
         }
     }
 
+    //@EventHandler
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
+        if (sender.equals("Console")){
+            this.getLogger().warning("该命令仅限玩家执行！");
+            return false;
+        }
+        else {
+            switch (args[1]){
+                case ("set"):
+                    switch (args[2]){
+                        case ("mend"):
+                            if (args[3].equals("true")){
+                                Mend = true;
+                                return true;
+                            } else if (args[3].equals("false")) {
+                                Mend = false;
+                                return true;
+                            }else {
+                                sender.sendMessage(ChatColor.RED +"请输入一个有效内容！");
+                                return false;
+                            }
+
+                        case ("Slow_Mend"):
+                            if (args[3].equals("true")){
+                                Slow_Mend = true;
+                                return true;
+                            } else if (args[3].equals("false")) {
+                                Slow_Mend = false;
+                                return true;
+                            }else {
+                                sender.sendMessage(ChatColor.RED +"请输入一个有效内容！");
+                                return false;
+                            }
+
+                        case ("Max_Mend_Limit"):
+                            if (args[3].equals("true")){
+                                Limit = true;
+                                return true;
+                            } else if (args[3].equals("false")) {
+                                Limit = false;
+                                return true;
+                            }else {
+                                sender.sendMessage(ChatColor.RED +"请输入一个有效内容！");
+                                return false;
+                            }
+                    }
+            }
+        }
+        return true;
+    }
+
+    @EventHandler
+    public void onVillagerAcquireTrade(VillagerAcquireTradeEvent e){//禁止村民出货
+        if (!Obtain_v){
+            Enchantment enc = MENDING;
+            if (e.getRecipe().getResult().getItemMeta().hasEnchant(enc)){
+                e.setCancelled(true);
+            }
+        }
+    }
+
     private boolean ifboolean(String config,boolean moren){
         boolean bl;
         if (getConfig().contains(config)) {
@@ -170,6 +237,7 @@ public final class Slow_mending extends JavaPlugin implements Listener {
 
     public void loadpl(){
         Bukkit.getPluginManager().registerEvents(this, this);
+        Bukkit.getPluginCommand("slowmending");
         //判断是否启用
         Mend = ifboolean("Settings.Mend",true);
         //判断是否减缓
@@ -196,8 +264,12 @@ public final class Slow_mending extends JavaPlugin implements Listener {
                 Item_Prefix = ifstr("Settings.Max_Mend_Limit.Item_Prefix","破损的-");
             }
         }
+
+        Obtain_v = ifboolean("Settings.Obtain.Villager",true);
+
     }
 }
+
 
 //if (!e.getItem().getItemMeta().hasLore()){
 //
