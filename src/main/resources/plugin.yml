@@ -1,5 +1,5 @@
 name: slow_mending
-version: 'v1.1'
+version: 'v1.2'
 main: org.sbbpl.slow_mending.Slow_mending
 api-version: '1.20'
 commands:
