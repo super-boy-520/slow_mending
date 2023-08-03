@@ -42,8 +42,9 @@ public final class Slow_mending extends JavaPlugin implements Listener {
             if (e.getItem().getItemMeta().hasLore()){
                 lore = e.getItem().getItemMeta().getLore();
                 for (String list : lore) {//遍历一遍找指定
-                    list = list.substring(0,7);
-                    if (list.equals("剩余修补次数：")){//找到
+                    list = list.substring(0,9);
+                    System.out.println(list);
+                    if (list.equals("§9剩余修补次数：")){//找到
                         find = true;
                         break;
                     }
@@ -53,16 +54,13 @@ public final class Slow_mending extends JavaPlugin implements Listener {
 
                     System.out.println(lore);
 
-                    lore.add("剩余修补次数："+(Max+1));
-
-                    System.out.println(lore);
-
+                    lore.add("§9剩余修补次数："+(Max+1));
                     mate.setLore(lore);
                     e.getItem().setItemMeta(mate);
                 }
             }else {
                 ItemMeta mate = e.getItem().getItemMeta();
-                lore.add("剩余修补次数："+(Max+1));
+                lore.add("§9剩余修补次数："+(Max+1));
                 mate.setLore(lore);
                 e.getItem().setItemMeta(mate);
             }
@@ -81,18 +79,18 @@ public final class Slow_mending extends JavaPlugin implements Listener {
                     int listnum = 0;
                     for (String list : lore) {//遍历一遍找指定
                         listnum++;
-                        System.out.println(listnum);
-                        String listt = list.substring(0, 7);
-                        if (listt.equals("剩余修补次数：")) {//找到
-                            Matcher p = Pattern.compile("[^0-9]").matcher(list);
-                            int num = Integer.parseInt(p.replaceAll(""));//获取数字
+                        String listt = list.substring(0, 9);
+                        if (listt.equals("§9剩余修补次数：")) {//找到
+                            int num = Integer.parseInt(list.substring(9));
+//                            Matcher p = Pattern.compile("[^0-9]").matcher(list);
+//                            int num = Integer.parseInt(p.replaceAll(""));//获取数字
                             if (num <= 0) {//如果耗尽跳过
                                 e.setCancelled(true);
                                 break;
                             } else {
                                 num--;
                                 ItemMeta m = e.getItem().getItemMeta();
-                                lore.set((listnum-1),"剩余修补次数：" + (num));
+                                lore.set((listnum-1),"§9剩余修补次数：" + (num));
                                 m.setLore(lore);
                                 e.getItem().setItemMeta(m);
                                 if ((num <= 0) && send) {
