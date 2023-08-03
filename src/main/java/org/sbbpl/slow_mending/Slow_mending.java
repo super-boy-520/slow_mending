@@ -50,13 +50,19 @@ public final class Slow_mending extends JavaPlugin implements Listener {
                 }
                 if (!find){
                     ItemMeta mate = e.getItem().getItemMeta();
-                    lore.add("剩余修补次数： "+(Max+1));
+
+                    System.out.println(lore);
+
+                    lore.add("剩余修补次数："+(Max+1));
+
+                    System.out.println(lore);
+
                     mate.setLore(lore);
                     e.getItem().setItemMeta(mate);
                 }
             }else {
                 ItemMeta mate = e.getItem().getItemMeta();
-                lore.add("剩余修补次数： "+(Max+1));
+                lore.add("剩余修补次数："+(Max+1));
                 mate.setLore(lore);
                 e.getItem().setItemMeta(mate);
             }
@@ -72,7 +78,10 @@ public final class Slow_mending extends JavaPlugin implements Listener {
                 //判断是否限制
                 if (Limit) {
                     List<String> lore = e.getItem().getItemMeta().getLore();//获取
+                    int listnum = 0;
                     for (String list : lore) {//遍历一遍找指定
+                        listnum++;
+                        System.out.println(listnum);
                         String listt = list.substring(0, 7);
                         if (listt.equals("剩余修补次数：")) {//找到
                             Matcher p = Pattern.compile("[^0-9]").matcher(list);
@@ -82,10 +91,9 @@ public final class Slow_mending extends JavaPlugin implements Listener {
                                 break;
                             } else {
                                 num--;
-                                List<String> l = new LinkedList<>();
                                 ItemMeta m = e.getItem().getItemMeta();
-                                l.add("剩余修补次数：" + (num));
-                                m.setLore(l);
+                                lore.set((listnum-1),"剩余修补次数：" + (num));
+                                m.setLore(lore);
                                 e.getItem().setItemMeta(m);
                                 if ((num <= 0) && send) {
                                     e.setCancelled(true);
@@ -199,22 +207,3 @@ public final class Slow_mending extends JavaPlugin implements Listener {
     }
 }
 
-//if (!e.getItem().getItemMeta().hasLore()){
-//
-//        }else {
-//        List<String> lore;
-//        lore = e.getItem().getItemMeta().getLore();
-//        for (String i:lore){
-//        Matcher p = Pattern.compile("\\[CDATA\\[(.*?)\\]\\]>").matcher(i);
-//        if (i.equals("剩余修补次数：")){
-//        break;
-//        }
-//        else {
-//        ItemMeta mate = e.getItem().getItemMeta();
-//        lore.add("剩余修补次数： "+(Max+1));
-//        mate.setLore(lore);
-//        e.getItem().setItemMeta(mate);
-//        break;
-//        }
-//        }
-//        }
