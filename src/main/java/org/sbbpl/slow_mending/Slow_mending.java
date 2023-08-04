@@ -19,7 +19,7 @@ public final class Slow_mending extends JavaPlugin implements Listener {
     private boolean Mend, Slow_Mend,Limit,Change_Name,send;
     private int Mitigation_Coefficient,Max;
     private List<String> Ban_Item, Allow_item;
-    private String Message,Item_Prefix;
+    private String Message,Item_Prefix,Color;
     private boolean find=false;
 
     @Override
@@ -42,25 +42,23 @@ public final class Slow_mending extends JavaPlugin implements Listener {
             if (e.getItem().getItemMeta().hasLore()){
                 lore = e.getItem().getItemMeta().getLore();
                 for (String list : lore) {//遍历一遍找指定
-                    list = list.substring(0,9);
-                    System.out.println(list);
-                    if (list.equals("§9剩余修补次数：")){//找到
-                        find = true;
-                        break;
+                    if (list.length()>=9){
+                        list = list.substring(0, 9);
+                        if (list.equals("§"+Color+"剩余修补次数：")){//找到
+                            find = true;
+                            break;
+                        }
                     }
                 }
                 if (!find){
                     ItemMeta mate = e.getItem().getItemMeta();
-
-                    System.out.println(lore);
-
-                    lore.add("§9剩余修补次数："+(Max+1));
+                    lore.add("§"+Color+"剩余修补次数："+(Max+1));
                     mate.setLore(lore);
                     e.getItem().setItemMeta(mate);
                 }
             }else {
                 ItemMeta mate = e.getItem().getItemMeta();
-                lore.add("§9剩余修补次数："+(Max+1));
+                lore.add("§"+Color+"剩余修补次数："+(Max+1));
                 mate.setLore(lore);
                 e.getItem().setItemMeta(mate);
             }
@@ -79,40 +77,43 @@ public final class Slow_mending extends JavaPlugin implements Listener {
                     int listnum = 0;
                     for (String list : lore) {//遍历一遍找指定
                         listnum++;
-                        String listt = list.substring(0, 9);
-                        if (listt.equals("§9剩余修补次数：")) {//找到
-                            int num = Integer.parseInt(list.substring(9));
+                        if (list.length()>=9){
+                            String listt = list.substring(0, 9);
+                            if (listt.equals("§"+Color+"剩余修补次数：")) {//找到
+                                int num = Integer.parseInt(list.substring(9));
 //                            Matcher p = Pattern.compile("[^0-9]").matcher(list);
 //                            int num = Integer.parseInt(p.replaceAll(""));//获取数字
-                            if (num <= 0) {//如果耗尽跳过
-                                e.setCancelled(true);
-                                break;
-                            } else {
-                                num--;
-                                ItemMeta m = e.getItem().getItemMeta();
-                                lore.set((listnum-1),"§9剩余修补次数：" + (num));
-                                m.setLore(lore);
-                                e.getItem().setItemMeta(m);
-                                if ((num <= 0) && send) {
+                                if (num <= 0) {//如果耗尽跳过
                                     e.setCancelled(true);
-                                    e.getPlayer().sendMessage(Message);
-                                }
-                                if ((num <= 0) && Change_Name) {
-                                    m = e.getItem().getItemMeta();
-                                    String name;
-                                    if (e.getItem().getItemMeta().hasDisplayName()) {
-                                        name = e.getItem().getItemMeta().getDisplayName();
-                                        name = Item_Prefix + name;
-                                    } else {
-                                        name = Item_Prefix + "工具";
-                                    }
-                                    m.setDisplayName(name);
+                                    break;
+                                } else {
+                                    num--;
+                                    ItemMeta m = e.getItem().getItemMeta();
+                                    lore.set((listnum-1),"§"+Color+"剩余修补次数：" + (num));
+                                    m.setLore(lore);
                                     e.getItem().setItemMeta(m);
-                                    e.setCancelled(true);
+                                    if ((num <= 0) && send) {
+                                        e.setCancelled(true);
+                                        e.getPlayer().sendMessage(Message);
+                                    }
+                                    if ((num <= 0) && Change_Name) {
+                                        m = e.getItem().getItemMeta();
+                                        String name;
+                                        if (e.getItem().getItemMeta().hasDisplayName()) {
+                                            name = e.getItem().getItemMeta().getDisplayName();
+                                            name = Item_Prefix + name;
+                                        } else {
+                                            name = Item_Prefix + "工具";
+                                        }
+                                        m.setDisplayName(name);
+                                        e.getItem().setItemMeta(m);
+                                        e.setCancelled(true);
+                                    }
+                                    break;
                                 }
-                                break;
                             }
                         }
+
                     }
                 }
 
@@ -201,6 +202,12 @@ public final class Slow_mending extends JavaPlugin implements Listener {
             if (Change_Name){
                 Item_Prefix = ifstr("Settings.Max_Mend_Limit.Item_Prefix","破损的-");
             }
+            Color = ifstr("Settings.Max_Mend_Limit.Color","9");
+            if (Color.length()>=1){
+                this.getLogger().warning("Color设定值过长，已自动截取第一位。");
+                Color = Color.substring(0,1);
+            }
+
         }
     }
 }

@@ -39,7 +39,10 @@ Settings:
     Change_Item_Name: true
 
     #更改名字前缀的内容
-    Item_Prefix: 破损的-
+    Item_Prefix: §7破损的-
+
+    #这是限制提示字体的颜色，请输入单个字母或数字，超出的部分会被截取（别作，万一没截取全服经验修补都嘚炸）
+    Color: 9
 
 
 
