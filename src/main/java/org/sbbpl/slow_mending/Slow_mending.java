@@ -1,33 +1,46 @@
 package org.sbbpl.slow_mending;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerItemMendEvent;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
+
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Random;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public final class Slow_mending extends JavaPlugin implements Listener {
+public class Slow_mending extends JavaPlugin implements Listener, TabCompleter {
 
     private boolean Mend, Slow_Mend,Limit,Change_Name,send;
     private int Mitigation_Coefficient,Max;
     private List<String> Ban_Item, Allow_item;
-    private String Message,Item_Prefix,Color;
+    private String Message;
+    private String Item_Prefix;
+    String Color;
     private boolean find=false;
+
+    File comconfigfile;
+    FileConfiguration comconfig;
+
 
     @Override
     public void onEnable() {
         // Plugin startup logic
         this.getLogger().info("欢迎使用本插件！");
         this.getLogger().info("正在加载插件...");
-        saveDefaultConfig();
+
 
         loadpl();
 
@@ -134,6 +147,135 @@ public final class Slow_mending extends JavaPlugin implements Listener {
         }
     }
 
+
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args){
+        Player player = (Player) sender;
+        if (!(sender instanceof Player)) {
+            sender.sendMessage("只有玩家可以使用此命令！");
+            return false;
+        }
+
+        if (!player.hasPermission("slowmending.command")){
+            sender.sendMessage("你没有权限！");
+            return false;
+        }
+
+        ItemMeta item = player.getEquipment().getItemInMainHand().getItemMeta();
+
+        if (args.length<1){
+            List<String> help;
+            help = comconfig.getStringList("Command.text.help");
+            for (String text : help) {
+                sender.sendMessage(text);
+            }
+            return true;
+        }
+
+        switch (args[0]) {
+            case ("reload") -> {
+                sender.sendMessage("正在重载插件...");
+                this.getLogger().info(sender.getName() + "正在重载插件...");
+                try {
+                    loadpl();
+                    sender.sendMessage("§a重载插件成功！");
+                    return true;
+                } catch (Exception e) {
+                    sender.sendMessage("§c重载插件失败！");
+                    this.getLogger().warning("重载插件失败！" + e);
+                    return false;
+                }
+            }
+            case ("help"), ("") -> {
+                List<String> help;
+                help = comconfig.getStringList("Command.text.help");
+                for (String text : help) {
+                    sender.sendMessage(text);
+                }
+                return true;
+            }
+            case ("version"),("v") -> {
+                List<String> version;
+                version = comconfig.getStringList("Command.text.version");
+                for (String text : version) {
+                    sender.sendMessage(text);
+                }
+                return true;
+            }
+            case ("set") -> {
+                if (args.length >= 2) {
+                    int num;
+                    try {
+                        num = Integer.parseInt(args[1]);
+                    } catch (NumberFormatException e) {
+                        sender.sendMessage("[Slow_mending] §c请输入一个有效数字");
+                        return true;
+                    }
+                    try{
+                        if (item.hasEnchant(Enchantment.MENDING) & item.hasLore()) {
+                            List<String> lore = item.getLore();
+                            int listnum = 0;
+                            for (String list : lore) {
+                                listnum++;
+                                if (list.length() >= 9) {
+                                    String listt = list.substring(0, 9);
+                                    if (listt.equals("§" + Color + "剩余修补次数：")) {//找到
+                                        lore.set((listnum - 1), "§" + Color + "剩余修补次数：" + (num));
+                                        item.setLore(lore);
+                                        player.getEquipment().getItemInMainHand().setItemMeta(item);
+                                        sender.sendMessage("[Slow_mending] §b已将该物品剩余修补次数设置为:" + ChatColor.GOLD + num);
+                                    }
+                                }
+                            }
+                            return true;
+
+                        } else {
+                            sender.sendMessage("[Slow_mending] §c请手持需要编辑的物品！");
+                            return true;
+                        }
+                    }catch (Exception e){
+                        sender.sendMessage("[Slow_mending] §c请手持需要编辑的物品！");
+                        return true;
+                    }
+                } else {
+                    sender.sendMessage("[Slow_mending] §c请输入一个有效数字");
+                    return true;
+                }
+            }
+            default -> {
+                sender.sendMessage("[Slow_mending] §c未知的指令！");
+                List<String> helps;
+                helps = comconfig.getStringList("Command.text.help");
+                for (String text : helps) {
+                    sender.sendMessage(text);
+                }
+                return true;
+            }
+        }
+
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        List<String> com = new LinkedList<>();
+        if (args.length==1){
+            com.add("help");
+            com.add("version");
+            com.add("set");
+            com.add("reload");
+            return com;
+        } else if (args.length==2 & args[0].equals("set")) {
+            com.add(String.valueOf(Max+1));
+            com.add("0");
+            return com;
+        }else {
+            return null;
+        }
+    }
+
+
+
     private boolean ifboolean(String config,boolean moren){
         boolean bl;
         if (getConfig().contains(config)) {
@@ -176,7 +318,12 @@ public final class Slow_mending extends JavaPlugin implements Listener {
     }
 
     public void loadpl(){
+        saveDefaultConfig();
+        this.saveResource("command.yml", false);
+
         Bukkit.getPluginManager().registerEvents(this, this);
+//        Bukkit.getPluginCommand("slowmending").setExecutor(new Slow_mending_command(this));
+        //getCommand("slowmending").setExecutor(new Slow_mending_command(this));
         //判断是否启用
         Mend = ifboolean("Settings.Mend",true);
         //判断是否减缓
@@ -203,10 +350,12 @@ public final class Slow_mending extends JavaPlugin implements Listener {
                 Item_Prefix = ifstr("Settings.Max_Mend_Limit.Item_Prefix","破损的-");
             }
             Color = ifstr("Settings.Max_Mend_Limit.Color","9");
-            if (Color.length()>=1){
+            if (Color.length()>1){
                 this.getLogger().warning("Color设定值过长，已自动截取第一位。");
                 Color = Color.substring(0,1);
             }
+            comconfigfile = new File(this.getDataFolder(),"command.yml");
+            comconfig =YamlConfiguration.loadConfiguration(comconfigfile);
 
         }
     }
