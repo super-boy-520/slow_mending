@@ -152,10 +152,7 @@ public class Slow_mending extends JavaPlugin implements Listener, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args){
         Player player = (Player) sender;
-        if (!(sender instanceof Player)) {
-            sender.sendMessage("只有玩家可以使用此命令！");
-            return false;
-        }
+
 
         if (!player.hasPermission("slowmending.command")){
             sender.sendMessage("你没有权限！");
@@ -204,6 +201,10 @@ public class Slow_mending extends JavaPlugin implements Listener, TabCompleter {
                 return true;
             }
             case ("set") -> {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage("只有玩家可以使用此命令！");
+                    return true;
+                }
                 if (args.length >= 2) {
                     int num;
                     try {
