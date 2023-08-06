@@ -1,5 +1,5 @@
 name: slow_mending
-version: '1.1.5'
+version: '1.1.7'
 main: org.sbbpl.slow_mending.Slow_mending
 api-version: '1.20'
 description: A plugin that mack mend slower and expensive than before.

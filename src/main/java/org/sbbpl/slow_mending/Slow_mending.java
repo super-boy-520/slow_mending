@@ -40,6 +40,9 @@ public class Slow_mending extends JavaPlugin implements Listener, TabCompleter {
         // Plugin startup logic
         this.getLogger().info("欢迎使用本插件！");
         this.getLogger().info("正在加载插件...");
+        Bukkit.getPluginManager().registerEvents(this, this);
+        saveDefaultConfig();
+        this.saveResource("command.yml", false);
 
 
         loadpl();
@@ -50,33 +53,33 @@ public class Slow_mending extends JavaPlugin implements Listener, TabCompleter {
 
     @EventHandler
     public void onPlayerItemMend(PlayerItemMendEvent e) {
-        if (Limit){
+        if (Limit) {
+            find = false;
             List<String> lore = new LinkedList<>();
-            if (e.getItem().getItemMeta().hasLore()){
+            if (e.getItem().getItemMeta().hasLore()) {
                 lore = e.getItem().getItemMeta().getLore();
                 for (String list : lore) {//遍历一遍找指定
-                    if (list.length()>=9){
+                    if (list.length() >= 9) {
                         list = list.substring(0, 9);
-                        if (list.equals("§"+Color+"剩余修补次数：")){//找到
+                        if (list.equals("§" + Color + "剩余修补次数：")) {//找到
                             find = true;
                             break;
                         }
                     }
                 }
-                if (!find){
+                if (!find) {
                     ItemMeta mate = e.getItem().getItemMeta();
-                    lore.add("§"+Color+"剩余修补次数："+(Max+1));
+                    lore.add("§" + Color + "剩余修补次数：" + (Max + 1));
                     mate.setLore(lore);
                     e.getItem().setItemMeta(mate);
                 }
-            }else {
+            } else {
                 ItemMeta mate = e.getItem().getItemMeta();
-                lore.add("§"+Color+"剩余修补次数："+(Max+1));
+                lore.add("§" + Color + "剩余修补次数：" + (Max + 1));
                 mate.setLore(lore);
                 e.getItem().setItemMeta(mate);
             }
         }
-        find = false;
 
 
         //判断白名单
@@ -94,8 +97,7 @@ public class Slow_mending extends JavaPlugin implements Listener, TabCompleter {
                             String listt = list.substring(0, 9);
                             if (listt.equals("§"+Color+"剩余修补次数：")) {//找到
                                 int num = Integer.parseInt(list.substring(9));
-//                            Matcher p = Pattern.compile("[^0-9]").matcher(list);
-//                            int num = Integer.parseInt(p.replaceAll(""));//获取数字
+
                                 if (num <= 0) {//如果耗尽跳过
                                     e.setCancelled(true);
                                     break;
@@ -175,6 +177,7 @@ public class Slow_mending extends JavaPlugin implements Listener, TabCompleter {
                 sender.sendMessage("正在重载插件...");
                 this.getLogger().info(sender.getName() + "正在重载插件...");
                 try {
+                    reloadConfig();
                     loadpl();
                     sender.sendMessage("§a重载插件成功！");
                     return true;
@@ -215,22 +218,10 @@ public class Slow_mending extends JavaPlugin implements Listener, TabCompleter {
                     }
                     try{
                         if (item.hasEnchant(Enchantment.MENDING) & item.hasLore()) {
-                            List<String> lore = item.getLore();
-                            int listnum = 0;
-                            for (String list : lore) {
-                                listnum++;
-                                if (list.length() >= 9) {
-                                    String listt = list.substring(0, 9);
-                                    if (listt.equals("§" + Color + "剩余修补次数：")) {//找到
-                                        lore.set((listnum - 1), "§" + Color + "剩余修补次数：" + (num));
-                                        item.setLore(lore);
-                                        player.getEquipment().getItemInMainHand().setItemMeta(item);
-                                        sender.sendMessage("[Slow_mending] §b已将该物品剩余修补次数设置为:" + ChatColor.GOLD + num);
-                                    }
-                                }
-                            }
+                            item.setLore(setnum(item,Color,num));
+                            player.getEquipment().getItemInMainHand().setItemMeta(item);
+                            sender.sendMessage("[Slow_mending] §b已将该物品剩余修补次数设置为:" + ChatColor.GOLD + num);
                             return true;
-
                         } else {
                             sender.sendMessage("[Slow_mending] §c请手持需要编辑的物品！");
                             return true;
@@ -244,6 +235,34 @@ public class Slow_mending extends JavaPlugin implements Listener, TabCompleter {
                     return true;
                 }
             }
+            case ("add") -> {
+                try{
+                    if (!(args.length ==3)){
+                        sender.sendMessage("[Slow_mending] §c请正确输入命令");
+                        return true;
+                    }
+                    Player cmdplayer = getServer().getPlayer(args[1]);
+                    if (isint(args[2])){
+                        ItemMeta usitem = cmdplayer.getEquipment().getItemInMainHand().getItemMeta();
+                        if (usitem.hasEnchant(Enchantment.MENDING) & usitem.hasLore()){
+                            usitem.setLore(addnum(usitem,Color,Integer.parseInt(args[2])));
+                            player.getEquipment().getItemInMainHand().setItemMeta(usitem);
+                            sender.sendMessage("[Slow_mending] §b已将该物品剩余修补次数增加:" + ChatColor.GOLD + args[2]);
+                            return true;
+                        }
+                        else {
+                            sender.sendMessage("[Slow_mending] §c请手持需要编辑的物品");
+                            return true;
+                        }
+                    }else {
+                        sender.sendMessage("[Slow_mending] §c请输入一个有效数字");
+                        return true;
+                    }
+                }catch (Exception e){
+                    sender.sendMessage("[Slow_mending] §c指定对象不在线！");
+                    return true;
+                }
+            }
             default -> {
                 sender.sendMessage("[Slow_mending] §c未知的指令！");
                 List<String> helps;
@@ -254,7 +273,7 @@ public class Slow_mending extends JavaPlugin implements Listener, TabCompleter {
                 return true;
             }
         }
-
+        //return false;
     }
 
     @Override
@@ -265,6 +284,7 @@ public class Slow_mending extends JavaPlugin implements Listener, TabCompleter {
             com.add("version");
             com.add("set");
             com.add("reload");
+            com.add("add");
             return com;
         } else if (args.length==2 & args[0].equals("set")) {
             com.add(String.valueOf(Max+1));
@@ -319,10 +339,9 @@ public class Slow_mending extends JavaPlugin implements Listener, TabCompleter {
     }
 
     public void loadpl(){
-        saveDefaultConfig();
-        this.saveResource("command.yml", false);
 
-        Bukkit.getPluginManager().registerEvents(this, this);
+
+
 //        Bukkit.getPluginCommand("slowmending").setExecutor(new Slow_mending_command(this));
         //getCommand("slowmending").setExecutor(new Slow_mending_command(this));
         //判断是否启用
@@ -358,6 +377,48 @@ public class Slow_mending extends JavaPlugin implements Listener, TabCompleter {
             comconfigfile = new File(this.getDataFolder(),"command.yml");
             comconfig =YamlConfiguration.loadConfiguration(comconfigfile);
 
+        }
+    }
+
+    private List<String> setnum(ItemMeta item,String Color,int num){
+        List<String> lore = item.getLore();
+        int listnum = 0;
+        for (String list : lore) {
+            listnum++;
+            if (list.length() >= 9) {
+                String listt = list.substring(0, 9);
+                if (listt.equals("§" + Color + "剩余修补次数：")) {//找到
+                    lore.set((listnum - 1), "§" + Color + "剩余修补次数：" + (num));
+                    return lore;
+                }
+            }
+        }
+        return lore;
+    }
+
+    private List<String> addnum(ItemMeta item,String Color,int num){
+        List<String> lore = item.getLore();
+        int listnum = 0;
+        for (String list : lore) {
+            listnum++;
+            if (list.length() >= 9) {
+                String listt = list.substring(0, 9);
+                if (listt.equals("§" + Color + "剩余修补次数：")) {//找到
+                    int nownum = Integer.parseInt(list.substring(9));
+                    lore.set((listnum - 1), "§" + Color + "剩余修补次数：" + (nownum+num));
+                    return lore;
+                }
+            }
+        }
+        return lore;
+    }
+
+    private boolean isint (String num){
+        try {
+            Integer.parseInt(num);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
         }
     }
 }
