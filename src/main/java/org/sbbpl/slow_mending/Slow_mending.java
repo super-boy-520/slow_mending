@@ -150,18 +150,19 @@ public class Slow_mending extends JavaPlugin implements Listener, TabCompleter {
     }
 
 
-
+    Player player;
+    ItemMeta item;
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args){
-        Player player = (Player) sender;
 
-
-        if (!player.hasPermission("slowmending.command")){
-            sender.sendMessage("你没有权限！");
-            return false;
+        if (sender instanceof Player) {
+            player = (Player) sender;
+            if (!player.hasPermission("slowmending.command")){
+                sender.sendMessage("你没有权限！");
+                return false;
+            }
+            ItemMeta item = player.getEquipment().getItemInMainHand().getItemMeta();
         }
-
-        ItemMeta item = player.getEquipment().getItemInMainHand().getItemMeta();
 
         if (args.length<1){
             List<String> help;
@@ -237,29 +238,49 @@ public class Slow_mending extends JavaPlugin implements Listener, TabCompleter {
             }
             case ("add") -> {
                 try{
-                    if (!(args.length ==3)){
-                        sender.sendMessage("[Slow_mending] §c请正确输入命令");
+                    Player cmdplayer = getServer().getPlayer(args[1]);
+                    if (!((args.length ==3)||(args.length ==4))){
+                        cmdplayer.sendMessage("[Slow_mending] §c请正确输入命令");
+                        this.getLogger().info("[Slow_mending] §c请正确输入命令");
                         return true;
                     }
-                    Player cmdplayer = getServer().getPlayer(args[1]);
                     if (isint(args[2])){
-                        ItemMeta usitem = cmdplayer.getEquipment().getItemInMainHand().getItemMeta();
-                        if (usitem.hasEnchant(Enchantment.MENDING) & usitem.hasLore()){
-                            usitem.setLore(addnum(usitem,Color,Integer.parseInt(args[2])));
-                            player.getEquipment().getItemInMainHand().setItemMeta(usitem);
-                            sender.sendMessage("[Slow_mending] §b已将该物品剩余修补次数增加:" + ChatColor.GOLD + args[2]);
-                            return true;
-                        }
-                        else {
-                            sender.sendMessage("[Slow_mending] §c请手持需要编辑的物品");
-                            return true;
+                        ItemMeta usitem;
+                        if((args.length ==4)&&(args[3].equals("off"))){
+                            usitem = cmdplayer.getEquipment().getItemInOffHand().getItemMeta();
+                            if (usitem.hasEnchant(Enchantment.MENDING) & usitem.hasLore()){
+                                usitem.setLore(addnum(usitem,Color,Integer.parseInt(args[2])));
+                                cmdplayer.getEquipment().getItemInOffHand().setItemMeta(usitem);
+                                cmdplayer.sendMessage("[Slow_mending] §b已将该物品剩余修补次数增加:" + ChatColor.GOLD + args[2]);
+                                this.getLogger().info("[Slow_mending] §b已将该物品剩余修补次数增加:" + ChatColor.GOLD + args[2]);
+                                return true;
+                            }else {
+                                sender.sendMessage("[Slow_mending] §c请手持需要编辑的物品");
+                                this.getLogger().info("[Slow_mending] §c请手持需要编辑的物品");
+                                return true;
+                            }
+                        }else {
+                            usitem = cmdplayer.getEquipment().getItemInMainHand().getItemMeta();
+                            if (usitem.hasEnchant(Enchantment.MENDING) & usitem.hasLore()){
+                                usitem.setLore(addnum(usitem,Color,Integer.parseInt(args[2])));
+                                cmdplayer.getEquipment().getItemInMainHand().setItemMeta(usitem);
+                                cmdplayer.sendMessage("[Slow_mending] §b已将该物品剩余修补次数增加:" + ChatColor.GOLD + args[2]);
+                                this.getLogger().info("[Slow_mending] §b已将该物品剩余修补次数增加:" + ChatColor.GOLD + args[2]);
+                                return true;
+                            }else {
+                                sender.sendMessage("[Slow_mending] §c请手持需要编辑的物品");
+                                this.getLogger().info("[Slow_mending] §c请手持需要编辑的物品");
+                                return true;
+                            }
                         }
                     }else {
                         sender.sendMessage("[Slow_mending] §c请输入一个有效数字");
+                        this.getLogger().info("[Slow_mending] §c请输入一个有效数字");
                         return true;
                     }
                 }catch (Exception e){
                     sender.sendMessage("[Slow_mending] §c指定对象不在线！");
+                    this.getLogger().info("[Slow_mending] §c指定对象不在线！");
                     return true;
                 }
             }
@@ -290,7 +311,10 @@ public class Slow_mending extends JavaPlugin implements Listener, TabCompleter {
             com.add(String.valueOf(Max+1));
             com.add("0");
             return com;
-        }else {
+        } else if (args.length==4 & args[0].equals("add")) {
+            com.add("off");
+            return com;
+        } else {
             return null;
         }
     }
